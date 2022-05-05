@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-enum Language { russian, english, deutsch, french, chinese }
+enum Language { russian, english, deutsch, french, japanese, unknown }
 
 abstract class Attribut {
   final String id;
@@ -12,127 +12,140 @@ abstract class Attribut {
   final String description;
   final String language;
 
-  Attribut(this.id, this.title, this.picture, this.voteAverage,
+  const Attribut(this.id, this.title, this.picture, this.voteAverage,
       this.releaseDate, this.description, this.language);
+
+  void aboutAttribut();
 }
 
-class Films extends Attribut with Converter {
-  Films(String id, String title, String picture, double voteAverage,
-      String releaseDate, String description, String language)
+class Film extends Attribut with Converter {
+  const Film(
+      {required String id,
+      required String title,
+      required String picture,
+      required double voteAverage,
+      required String releaseDate,
+      required String description,
+      required String language})
       : super(id, title, picture, voteAverage, releaseDate, description,
             language);
+
+  @override
+  void aboutAttribut() {
+    var languageType = getLanguage(language);
+
+    print('Фильм $title, язык ${languageType.toPrettyString()}');
+  }
 }
 
 mixin Converter {
-  void converter(String language) {
+  Language getLanguage(String language) {
     switch (language) {
       case 'russian':
-        Language.russian;
-        break;
+        return Language.russian;
       case 'english':
-        Language.english;
-        break;
+        return Language.english;
       case 'deutsch':
-        Language.deutsch;
-        break;
+        return Language.deutsch;
       case 'french':
-        Language.french;
-        break;
-      case 'chinese':
-        Language.chinese;
-        break;
+        return Language.french;
+      case 'japanese':
+        return Language.japanese;
+      default:
+        return Language.unknown;
     }
   }
 }
 
-extension LanguageName on Language {
-  void toPrettyString(Language language) {
-    switch (language) {
+extension LanguageExtension on Language {
+  String toPrettyString() {
+    switch (this) {
       case Language.russian:
-        print('Русский');
-        break;
+        return 'Русский';
       case Language.english:
-        print('Английский');
-        break;
+        return 'Английский';
       case Language.deutsch:
-        print('Немецкий');
-        break;
+        return 'Немецкий';
       case Language.french:
-        print('Французский');
-        break;
-      case Language.chinese:
-        print('Китайский');
-        break;
+        return 'Французский';
+      case Language.japanese:
+        return 'Японский';
+      case Language.unknown:
+        return 'Не понятный язык';
     }
-  }
-}
-
-Future<void> filmsFullList(List filmList) async {
-  try {
-    for (var item in filmList) {
-      print(item.title);
-    }
-  } catch (e) {
-    print('Фильмов нет');
-  }
-}
-
-Future<void> filterFilmsList(List filmList) async {
-  try {
-    for (var item in filmList) {
-      if (item.voteAverage >= 8.8) {
-        print(item.title);
-      }
-    }
-  } catch (e) {
-    print('Фильмов нет');
   }
 }
 
 void main() {
-  List filmList = [
-    Films(
-        '1',
-        'Властелин колец',
-        'https://avatars.mds.yandex.net/get-kinopoisk-image/6201401/a2d5bcae-a1a9-442f-8195-f5373a5ba77f/300x450',
-        8.6,
-        '2001',
-        'Сказания о Средиземье — это хроника Великой войны за Кольцо, длившейся не одну тысячу лет',
-        'english'),
-    Films(
-        '2',
-        'Унесённые призраками',
-        'https://avatars.mds.yandex.net/get-kinopoisk-image/6201401/ae3b699c-3db7-4196-a869-39b610bfe706/300x450',
-        8.5,
-        '2001',
-        'Тихиро с мамой и папой переезжает в новый дом',
-        'japanese'),
-    Films(
-        '3',
-        '1+1',
-        'https://avatars.mds.yandex.net/get-kinopoisk-image/1946459/bf93b465-1189-4155-9dd1-cb9fb5cb1bb5/300x450',
-        8.8,
-        '2011',
-        'Пострадав в результате несчастного случая, богатый аристократ Филипп нанимает в помощники человека, который менее всего подходит для этой работы',
-        'french'),
-    Films(
-        '4',
-        'Достучаться до небес',
-        'https://avatars.mds.yandex.net/get-kinopoisk-image/1773646/aac37c55-3aa2-4f4d-b3ed-9f59ba426f92/300x450',
-        8.6,
-        '1997',
-        'Судьба сводит двух незнакомцев в больнице, где они получают смертельные диагнозы',
-        'deutsch'),
-    Films(
-        '5',
-        'Иван Васильевич меняет профессию',
-        'https://avatars.mds.yandex.net/get-kinopoisk-image/1704946/1a170eea-da02-40c1-a750-91c59d56e1a6/300x450',
-        8.8,
-        '1973',
-        'Инженер-изобретатель Тимофеев сконструировал машину времени, которая соединила его квартиру с далеким шестнадцатым веком - точнее, с палатами государя Ивана Грозного',
-        'russian')
-  ];
+  List<Film> films = _getFilms();
 
-  filmsFullList(filmList);
-  filterFilmsList(filmList);
+  for (final film in films) {
+    film.aboutAttribut();
+  }
+
+  List<Film> filterFilms = _filterFilm(films);
+
+  print('Рейтинг выше 8.7');
+
+  for (final film in filterFilms) {
+    film.aboutAttribut();
+  }
+}
+
+List<Film> _filterFilm(List<Film> films) {
+  return films.where((e) => e.voteAverage >= 8.8).toList();
+}
+
+List<Film> _getFilms() {
+  return [
+    const Film(
+        id: '1',
+        title: 'Властелин колец',
+        picture:
+            'https://avatars.mds.yandex.net/get-kinopoisk-image/6201401/a2d5bcae-a1a9-442f-8195-f5373a5ba77f/300x450',
+        voteAverage: 8.6,
+        releaseDate: '2001',
+        description:
+            'Сказания о Средиземье — это хроника Великой войны за Кольцо, длившейся не одну тысячу лет',
+        language: 'english'),
+    const Film(
+        id: '2',
+        title: 'Унесённые призраками',
+        picture:
+            'https://avatars.mds.yandex.net/get-kinopoisk-image/6201401/ae3b699c-3db7-4196-a869-39b610bfe706/300x450',
+        voteAverage: 8.5,
+        releaseDate: '2001',
+        description: 'Тихиро с мамой и папой переезжает в новый дом',
+        language: 'japanese'),
+    const Film(
+        id: '3',
+        title: '1+1',
+        picture:
+            'https://avatars.mds.yandex.net/get-kinopoisk-image/1946459/bf93b465-1189-4155-9dd1-cb9fb5cb1bb5/300x450',
+        voteAverage: 8.8,
+        releaseDate: '2011',
+        description:
+            'Пострадав в результате несчастного случая, богатый аристократ Филипп нанимает в помощники человека, который менее всего подходит для этой работы',
+        language: 'french'),
+    const Film(
+        id: '4',
+        title: 'Достучаться до небес',
+        picture:
+            'https://avatars.mds.yandex.net/get-kinopoisk-image/1773646/aac37c55-3aa2-4f4d-b3ed-9f59ba426f92/300x450',
+        voteAverage: 8.6,
+        releaseDate: '1997',
+        description:
+            'Судьба сводит двух незнакомцев в больнице, где они получают смертельные диагнозы',
+        language: 'deutsch'),
+    const Film(
+        id: '5',
+        title: 'Иван Васильевич меняет профессию',
+        picture:
+            'https://avatars.mds.yandex.net/get-kinopoisk-image/1704946/1a170eea-da02-40c1-a750-91c59d56e1a6/300x450',
+        voteAverage: 8.8,
+        releaseDate: '1973',
+        description:
+            'Инженер-изобретатель Тимофеев сконструировал машину времени, которая соединила его квартиру с далеким шестнадцатым веком - точнее, с палатами государя Ивана Грозного',
+        language: 'russian')
+  ];
 }
